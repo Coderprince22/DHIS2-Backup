@@ -25,7 +25,10 @@ import {
   CBMNC_DATA_ELEMENTS,
   CMAM_COMMODITIES,
   CMAM_COLUMNS,
-  CMAM_BENEFICIARY_CATEGORIES
+  CMAM_BENEFICIARY_CATEGORIES,
+  MALARIA_OPD_ROWS,
+  MALARIA_IPD_ROWS,
+  MALARIA_COMMODITIES
 } from '../constants';
 import { reportService, ReportData } from '../services/reportService';
 import { auth } from '../lib/firebase';
@@ -82,6 +85,8 @@ export default function DataEntry() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [formRef] = useState(React.createRef<HTMLDivElement>());
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -135,14 +140,83 @@ export default function DataEntry() {
     setIsSaved(false);
   };
 
+  // Malaria Totals Calculation
+  useEffect(() => {
+    if (selectedDataSet === 'ds_malaria') {
+      const getVal = (id: string) => parseInt(formValues[id] || '0') || 0;
+      
+      const newTotals: Record<string, string> = {};
+
+      // OPD Total Cases: A+B+C+D
+      const opdTotalAge1 = getVal('m_opd_a_age1') + getVal('m_opd_b_age1') + getVal('m_opd_c_age1') + getVal('m_opd_d_age1');
+      const opdTotalAge2 = getVal('m_opd_a_age2') + getVal('m_opd_b_age2') + getVal('m_opd_c_age2') + getVal('m_opd_d_age2');
+      newTotals['m_opd_total_cases_age1'] = opdTotalAge1.toString();
+      newTotals['m_opd_total_cases_age2'] = opdTotalAge2.toString();
+
+      // OPD Total Suspected: L+N+H+I
+      const opdSuspectedAge1 = getVal('m_opd_l_age1') + getVal('m_opd_n_age1') + getVal('m_opd_h_age1') + getVal('m_opd_i_age1');
+      const opdSuspectedAge2 = getVal('m_opd_l_age2') + getVal('m_opd_n_age2') + getVal('m_opd_h_age2') + getVal('m_opd_i_age2');
+      newTotals['m_opd_total_suspected_age1'] = opdSuspectedAge1.toString();
+      newTotals['m_opd_total_suspected_age2'] = opdSuspectedAge2.toString();
+
+      // IPD V: Q+S+U
+      const ipdVAge1 = getVal('m_ipd_q_age1') + getVal('m_ipd_s_age1') + getVal('m_ipd_u_age1');
+      const ipdVAge2 = getVal('m_ipd_q_age2') + getVal('m_ipd_s_age2') + getVal('m_ipd_u_age2');
+      newTotals['m_ipd_v_age1'] = ipdVAge1.toString();
+      newTotals['m_ipd_v_age2'] = ipdVAge2.toString();
+
+      // IPD W: R+S+T+U
+      const ipdWAge1 = getVal('m_ipd_r_age1') + getVal('m_ipd_s_age1') + getVal('m_ipd_t_age1') + getVal('m_ipd_u_age1');
+      const ipdWAge2 = getVal('m_ipd_r_age2') + getVal('m_ipd_s_age2') + getVal('m_ipd_t_age2') + getVal('m_ipd_u_age2');
+      newTotals['m_ipd_w_age1'] = ipdWAge1.toString();
+      newTotals['m_ipd_w_age2'] = ipdWAge2.toString();
+
+      // Only update if changes found to avoid loops
+      const hasChanges = Object.keys(newTotals).some(key => formValues[key] !== newTotals[key]);
+      if (hasChanges) {
+        setFormValues(prev => ({ ...prev, ...newTotals }));
+      }
+    }
+  }, [formValues, selectedDataSet]);
+
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+    
+    if (!selectedOU) errors.push("Organisation Unit is required.");
+    if (!selectedDataSet) errors.push("Data Set is required.");
+    if (!selectedPeriod) errors.push("Reporting Period is required.");
+
+    // Check numerical values
+    Object.entries(formValues).forEach(([key, value]) => {
+      if (value !== '' && isNaN(Number(value))) {
+        errors.push(`Invalid numerical value for field: ${key}`);
+      }
+    });
+
+    setValidationErrors(errors);
+    
+    if (errors.length > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSave = async (newStatus?: 'COMPLETE' | 'INCOMPLETE') => {
     if (!user) {
       handleLogin();
       return;
     }
+
+    if (newStatus === 'COMPLETE' && !validateForm()) {
+      return;
+    }
+
     if (!selectedOU) return;
 
     const finalStatus = newStatus || status;
+    setValidationErrors([]);
     setIsSaving(true);
     setError(null);
     
@@ -268,11 +342,25 @@ export default function DataEntry() {
             </button>
           </div>
         ) : selectedOU && selectedDataSet ? (
-          <div className="flex flex-col gap-8 pb-12">
+          <div className="flex flex-col gap-8 pb-12" ref={formRef}>
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded flex items-center gap-2 text-red-700 text-sm animate-in fade-in slide-in-from-top-2">
                 <AlertCircle size={16} />
                 {error}
+              </div>
+            )}
+
+            {validationErrors.length > 0 && (
+              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 text-orange-800 font-bold mb-2">
+                  <AlertCircle size={18} />
+                  <span>Submission blocked: {validationErrors.length} validation errors found</span>
+                </div>
+                <ul className="list-disc list-inside text-xs text-orange-700 space-y-1 ml-1">
+                  {validationErrors.map((err, idx) => (
+                    <li key={idx}>{err}</li>
+                  ))}
+                </ul>
               </div>
             )}
             
@@ -374,6 +462,136 @@ export default function DataEntry() {
                           </div>
                         ))}
                      </div>
+                  </div>
+                </div>
+              ) : selectedDataSet === 'ds_malaria' ? (
+                <div className="flex flex-col gap-8">
+                  <div className="bg-slate-300 px-4 py-2 text-center">
+                    <h2 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">
+                      MALARIA HEALTH FACILITY MONTHLY REPORT
+                    </h2>
+                  </div>
+
+                  {/* OPD Section */}
+                  <div className="border border-slate-300">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase">
+                          <th rowSpan={2} className="px-3 py-2 border-r border-b border-slate-300 text-left">Out Patient Department</th>
+                          <th colSpan={2} className="px-3 py-1 border-b border-slate-300 text-center">Out Patient Numbers</th>
+                        </tr>
+                        <tr className="bg-slate-50 text-[9px] font-bold text-slate-700 uppercase">
+                          <th className="px-3 py-1 border-r border-b border-slate-300 text-center w-32">&lt;5 Yrs</th>
+                          <th className="px-3 py-1 border-b border-slate-300 text-center w-32">&gt;=5 Yrs</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MALARIA_OPD_ROWS.map(row => (
+                          row.isHeader ? (
+                            <tr key={row.id} className="bg-slate-200">
+                              <td colSpan={3} className="px-3 py-1.5 text-[10px] font-black uppercase text-slate-700">{row.name}</td>
+                            </tr>
+                          ) : (
+                            <tr key={row.id} className="bg-white">
+                              <td className={`px-3 py-2 border-r border-b border-slate-300 text-[11px] ${row.isTotal ? 'font-bold' : 'font-medium'}`}>{row.name}</td>
+                              <td className={`border-r border-b border-slate-300 p-0 ${row.age1Disabled || row.isTotal ? 'bg-slate-100' : ''}`}>
+                                <input 
+                                  type="number"
+                                  disabled={row.age1Disabled || row.isTotal}
+                                  value={formValues[row.id + '_age1'] || ''}
+                                  onChange={(e) => handleInputChange(row.id + '_age1', e.target.value)}
+                                  className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm bg-transparent"
+                                />
+                              </td>
+                              <td className={`border-b border-slate-300 p-0 ${row.isTotal ? 'bg-slate-100' : ''}`}>
+                                <input 
+                                  type="number"
+                                  disabled={row.isTotal}
+                                  value={formValues[row.id + '_age2'] || ''}
+                                  onChange={(e) => handleInputChange(row.id + '_age2', e.target.value)}
+                                  className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm bg-transparent"
+                                />
+                              </td>
+                            </tr>
+                          )
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* IPD Section */}
+                  <div className="border border-slate-300">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase">
+                          <th rowSpan={2} className="px-3 py-2 border-r border-b border-slate-300 text-left">In Patient Department</th>
+                          <th colSpan={2} className="px-3 py-1 border-b border-slate-300 text-center">In Patient Numbers</th>
+                        </tr>
+                        <tr className="bg-slate-50 text-[9px] font-bold text-slate-700 uppercase">
+                          <th className="px-3 py-1 border-r border-b border-slate-300 text-center w-32">&lt;5 Yrs</th>
+                          <th className="px-3 py-1 border-b border-slate-300 text-center w-32">&gt;=5 Yrs</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {MALARIA_IPD_ROWS.map(row => (
+                          <tr key={row.id} className="bg-white">
+                            <td className={`px-3 py-2 border-r border-b border-slate-300 text-[11px] ${row.isTotal ? 'font-bold' : 'font-medium'}`}>{row.name}</td>
+                            <td className={`border-r border-b border-slate-300 p-0 ${row.age1Disabled || row.isTotal ? 'bg-slate-100' : ''}`}>
+                              <input 
+                                type="number"
+                                disabled={row.age1Disabled || row.isTotal}
+                                value={formValues[row.id + '_age1'] || ''}
+                                onChange={(e) => handleInputChange(row.id + '_age1', e.target.value)}
+                                className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm bg-transparent"
+                              />
+                            </td>
+                            <td className={`border-b border-slate-300 p-0 ${row.isTotal ? 'bg-slate-100' : ''}`}>
+                              <input 
+                                type="number"
+                                disabled={row.isTotal}
+                                value={formValues[row.id + '_age2'] || ''}
+                                onChange={(e) => handleInputChange(row.id + '_age2', e.target.value)}
+                                className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm bg-transparent"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Commodities Section */}
+                  <div className="max-w-2xl">
+                    <div className="border border-slate-300">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 text-[10px] font-bold text-slate-700 uppercase">
+                            <th colSpan={3} className="px-3 py-2 border-b border-slate-300 text-left">Commodities Used</th>
+                          </tr>
+                          <tr className="bg-slate-50 text-[9px] font-bold text-slate-700 uppercase">
+                            <th className="px-3 py-1 border-r border-b border-slate-300 text-left">Item</th>
+                            <th className="px-3 py-1 border-r border-b border-slate-300 text-center w-24">Unit</th>
+                            <th className="px-3 py-1 border-b border-slate-300 text-center w-32">Quantity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {MALARIA_COMMODITIES.map(comm => (
+                            <tr key={comm.id} className="bg-white">
+                              <td className="px-3 py-1.5 border-r border-b border-slate-300 text-[11px] font-medium">{comm.name}</td>
+                              <td className="px-3 py-1.5 border-r border-b border-slate-300 text-[11px] text-center italic text-slate-500">{comm.unit}</td>
+                              <td className="border-b border-slate-300 p-0">
+                                <input 
+                                  type="number"
+                                  value={formValues[comm.id] || ''}
+                                  onChange={(e) => handleInputChange(comm.id, e.target.value)}
+                                  className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm"
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               ) : selectedDataSet === 'ds_cmam' ? (

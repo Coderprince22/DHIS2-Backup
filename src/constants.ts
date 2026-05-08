@@ -223,6 +223,66 @@ export const CMAM_BENEFICIARY_CATEGORIES = [
   { id: 'other', name: 'Other' },
 ];
 
+export const MALARIA_OPD_ROWS = [
+  { id: 'm_opd_a', name: 'A: Confirmed (Dx) Malaria Cases', hasAge: true },
+  { id: 'm_opd_b', name: 'B: Presumed (Dx) Malaria Cases (Clinically Diagnosed)', hasAge: true },
+  { id: 'm_opd_c', name: 'C: Confirmed malaria in pregnant woman (x)', hasAge: false, age1Disabled: true },
+  { id: 'm_opd_d', name: 'D: Presumed (clinically diagnosed) malaria in pregnant woman (x)', hasAge: false, age1Disabled: true },
+  { id: 'm_opd_total_cases', name: 'Total OPD Malaria Cases (A+B+C+D)', hasAge: true, isTotal: true, formula: ['m_opd_a', 'm_opd_b', 'm_opd_c', 'm_opd_d'] },
+  { id: 'm_opd_e', name: 'E: Total OPD Attendance: All causes (including malaria cases)', hasAge: true },
+  { id: 'm_opd_f', name: 'F: Confirmed malaria treatment failure (f)', hasAge: true },
+  { id: 'header_treatment', name: 'Treatment in OPD', isHeader: true },
+  { id: 'm_opd_h', name: 'H: Confirmed cases receiving firstline anti malarial medication (LA)', hasAge: true },
+  { id: 'm_opd_i', name: 'I: Presumed malaria cases receiving firstline anti malarial medication (LA)', hasAge: true },
+  { id: 'm_opd_j', name: 'J: Confirmed cases receiving secondline anti malarial medication (ASAQ)', hasAge: true },
+  { id: 'm_opd_k', name: 'K: Presumed malaria cases receiving secondline anti malarial medication (ASAQ)', hasAge: true },
+  { id: 'header_lab', name: 'Lab/RDT in OPD', isHeader: true },
+  { id: 'm_opd_l', name: 'L: Suspected malaria cases tested (mRDT)', hasAge: true },
+  { id: 'm_opd_m', name: 'M: Positive malaria cases (mRDT)', hasAge: true },
+  { id: 'm_opd_n', name: 'N: Suspected malaria cases tested (microscopy)', hasAge: true },
+  { id: 'm_opd_o', name: 'O: Positive malaria cases (microscopy)', hasAge: true },
+  { id: 'm_opd_total_suspected', name: 'Total suspected malaria cases (L+N+H+I)', hasAge: true, isTotal: true, formula: ['m_opd_l', 'm_opd_n', 'm_opd_h', 'm_opd_i'] },
+];
+
+export const MALARIA_IPD_ROWS = [
+  { id: 'm_ipd_q', name: 'Q: Total suspected malaria cases tested (microscopy)', hasAge: true },
+  { id: 'm_ipd_r', name: 'R: Confirmed malaria cases (microscopy)', hasAge: true },
+  { id: 'm_ipd_s', name: 'S: Presumed malaria cases (clinically diagnosed without test)', hasAge: true },
+  { id: 'm_ipd_t', name: 'T: Confirmed malaria in pregnant woman (x)', hasAge: false, age1Disabled: true },
+  { id: 'm_ipd_u', name: 'U: Presumed (clinically diagnosed) malaria in pregnant woman (x)', hasAge: false, age1Disabled: true },
+  { id: 'm_ipd_v', name: 'V: Total suspected malaria cases (Q+S+U)', hasAge: true, isTotal: true, formula: ['m_ipd_q', 'm_ipd_s', 'm_ipd_u'] },
+  { id: 'm_ipd_w', name: 'W: Total malaria cases (R+S+T+U)', hasAge: true, isTotal: true, formula: ['m_ipd_r', 'm_ipd_s', 'm_ipd_t', 'm_ipd_u'] },
+  { id: 'm_ipd_x', name: 'X: Confirmed malaria treatment failure (f)', hasAge: true },
+  { id: 'm_ipd_y', name: 'Y: Total inpatient malaria deaths', hasAge: true },
+  { id: 'm_ipd_z', name: 'Z: Total inpatient all causes', hasAge: true },
+  { id: 'm_ipd_za', name: 'Za: Total inpatient Deaths: all causes', hasAge: true },
+];
+
+export const MALARIA_COMMODITIES = [
+  { id: 'la_1x6', name: 'LA 1X6', unit: 'tabs' },
+  { id: 'la_2x6', name: 'LA 2X6', unit: 'tabs' },
+  { id: 'la_3x6', name: 'LA 3X6', unit: 'tabs' },
+  { id: 'la_4x6', name: 'LA 4X6', unit: 'tabs' },
+  { id: 'itn_preg', name: 'ITN Distributed to Pregnant women', unit: 'net' },
+  { id: 'itn_newborn', name: 'ITN Distributed to Newborn babies', unit: 'net' },
+  { id: 'sp', name: 'SP', unit: 'tabs' },
+  { id: 'rdts', name: 'RDTs', unit: 'test' },
+  { id: 'asaq_25', name: 'ASAQ 25mg/67.5mg (3 tablets)', unit: 'tabs' },
+  { id: 'asaq_50', name: 'ASAQ 50mg/125mg (3 tablets)', unit: 'tabs' },
+  { id: 'asaq_100_3', name: 'ASAQ 100mg/270mg (3 tablets)', unit: 'tabs' },
+  { id: 'asaq_100_6', name: 'ASAQ 100mg/270mg (6 tablets)', unit: 'tabs' },
+  { id: 'as_30_3', name: 'AS 30mg 150mg tablet (3 tablets)', unit: 'tabs' },
+  { id: 'as_30_6', name: 'AS 30mg 150mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_30_3_alt', name: 'AS 30mg 2x30mg tablet (3 tablets)', unit: 'tabs' },
+  { id: 'as_30_6_alt', name: 'AS 30mg 2x30mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_60_3', name: 'AS 60mg 120mg tablet (3 tablets)', unit: 'tabs' },
+  { id: 'as_60_6', name: 'AS 60mg 120mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_40_6', name: 'AS 40mg 320mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_80_6', name: 'AS 80mg 160mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_20_6', name: 'AS 20mg 80mg tablet (6 tablets)', unit: 'tabs' },
+  { id: 'as_80_480_6', name: 'AS 80mg 5x80mg + 40mg 320mg (6 + 3 tablets)', unit: 'tabs' },
+];
+
 export const CBMNC_DATA_ELEMENTS: DataElement[] = [
   { id: 'cbmnc_hsa_rep', name: "Number of HSA's who reported", valueType: 'NUMBER', aggregationType: 'SUM', description: '' },
   { id: 'cbmnc_hsa_prac', name: "Number of HSA's practicing CBMNC", valueType: 'NUMBER', aggregationType: 'SUM', description: '' },
