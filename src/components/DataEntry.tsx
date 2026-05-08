@@ -77,6 +77,8 @@ export default function DataEntry() {
 
   const [user, setUser] = useState<User | null>(null);
   const [selectedOU, setSelectedOU] = useState<string | null>(null);
+  const [ouSearch, setOuSearch] = useState('');
+  const [isOuOpen, setIsOuOpen] = useState(false);
   const [selectedDataSet, setSelectedDataSet] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('2026-04');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
@@ -126,12 +128,23 @@ export default function DataEntry() {
   };
 
   const handleLogin = async () => {
+    setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      setError("Login failed. Please try again.");
-      console.error(err);
+      // Using signInWithPopup as it's more reliable in this environment
+      const result = await signInWithPopup(auth, provider);
+      console.log("Logged in user:", result.user.email);
+    } catch (err: any) {
+      console.error("Login Error Details:", err);
+      if (err.code === 'auth/popup-blocked') {
+        setError("Sign-in popup was blocked by your browser. Please allow popups for this site.");
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        setError("Sign-in process was cancelled.");
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError("Sign-in window was closed before completion.");
+      } else {
+        setError(`Login failed: ${err.message || "Unknown error"}. Please check your connection or try opening the app in a new tab.`);
+      }
     }
   };
 
@@ -267,20 +280,67 @@ export default function DataEntry() {
         <div className="bg-[#d5e8d4] p-4 border border-[#82b366] shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5 lg:col-span-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
                 <label className="text-[11px] font-bold text-slate-700 w-32 shrink-0">Organisation Unit</label>
-                <select 
-                  className="flex-1 bg-white border border-slate-300 px-1 py-1 text-sm outline-none cursor-pointer"
-                  onChange={(e) => setSelectedOU(e.target.value)}
-                  value={selectedOU || ''}
-                >
-                  <option value="">Select an Org Unit...</option>
-                  {flatOrgUnits.map(ou => (
-                    <option key={ou.id} value={ou.id}>
-                      {'\u00A0'.repeat(ou.depth * 4)}{ou.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex-1 relative">
+                  <div 
+                    className="w-full bg-white border border-slate-300 px-2 py-1 text-sm outline-none cursor-pointer flex items-center justify-between min-h-[28px]"
+                    onClick={() => setIsOuOpen(!isOuOpen)}
+                  >
+                    <span className="truncate">
+                      {selectedOU ? flatOrgUnits.find(ou => ou.id === selectedOU)?.name : 'Select an Org Unit...'}
+                    </span>
+                    <Search size={14} className="text-slate-400" />
+                  </div>
+                  
+                  {isOuOpen && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-slate-300 shadow-xl max-h-80 flex flex-col animate-in fade-in slide-in-from-top-1">
+                      <div className="p-2 border-b border-slate-100 bg-slate-50">
+                        <input 
+                          autoFocus
+                          type="text"
+                          placeholder="Search units..."
+                          value={ouSearch}
+                          onChange={(e) => setOuSearch(e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-slate-200 outline-none focus:ring-2 focus:ring-blue-100"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="overflow-y-auto flex-1">
+                        {flatOrgUnits
+                          .filter(ou => ou.name.toLowerCase().includes(ouSearch.toLowerCase()))
+                          .map(ou => (
+                            <div 
+                              key={ou.id}
+                              className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 transition-colors flex items-center gap-2 ${selectedOU === ou.id ? 'bg-blue-100 font-bold text-blue-700' : 'text-slate-700'}`}
+                              onClick={() => {
+                                setSelectedOU(ou.id);
+                                setIsOuOpen(false);
+                                setOuSearch('');
+                              }}
+                            >
+                              <div className="flex flex-col">
+                                <span>{ou.name}</span>
+                                {ou.level > 1 && (
+                                  <span className="text-[10px] text-slate-400">Level {ou.level}</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        {flatOrgUnits.filter(ou => ou.name.toLowerCase().includes(ouSearch.toLowerCase())).length === 0 && (
+                          <div className="p-4 text-center text-sm text-slate-500 italic">No units found matching "{ouSearch}"</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Backdrop to close dropdown */}
+                {isOuOpen && (
+                  <div 
+                    className="fixed inset-0 z-40 bg-transparent" 
+                    onClick={() => setIsOuOpen(false)}
+                  />
+                )}
               </div>
               
               <div className="flex items-center gap-2">
@@ -723,23 +783,23 @@ export default function DataEntry() {
                 <button 
                   onClick={() => handleSave('COMPLETE')}
                   disabled={isSaving || status === 'COMPLETE'}
-                  className={`px-8 py-1 border border-[#aaaaaa] text-sm font-medium transition-colors shadow-sm min-w-[120px] flex items-center justify-center gap-2 ${
+                  className={`px-8 py-1 border border-[#aaaaaa] text-sm font-black transition-all shadow-sm min-w-[120px] flex items-center justify-center gap-2 ${
                     status === 'COMPLETE' 
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                      : 'bg-[#efefef] hover:bg-slate-200 active:bg-slate-300 text-slate-700'
+                      ? 'bg-slate-100 text-slate-400 border-dashed cursor-not-allowed opacity-70' 
+                      : 'bg-[#efefef] hover:bg-slate-200 active:bg-slate-300 text-slate-800'
                   }`}
                 >
-                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : null}
-                  {isSaving ? 'Saving...' : 'Complete'}
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : status === 'COMPLETE' ? <CheckCircle2 size={14} className="text-green-600" /> : null}
+                  {isSaving ? 'Saving...' : status === 'COMPLETE' ? 'Completed' : 'Complete'}
                 </button>
                 <button 
                   onClick={() => handleSave('INCOMPLETE')}
                   disabled={isSaving || status === 'INCOMPLETE'}
-                  className={`px-8 py-1 border border-[#aaaaaa] text-sm font-medium transition-colors shadow-sm min-w-[120px] ${
+                  className={`px-8 py-1 border border-[#aaaaaa] text-sm font-medium transition-all shadow-sm min-w-[120px] ${
                     status === 'INCOMPLETE'
                       ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      : 'bg-[#efefef] hover:bg-slate-200 active:bg-slate-300 text-slate-700'
-                  } ${status === 'COMPLETE' ? 'ring-2 ring-[#82b366] ring-offset-1' : ''}`}
+                      : 'bg-[#efefef] hover:bg-orange-50 active:bg-orange-100 text-orange-700 font-bold border-orange-300'
+                  } ${status === 'COMPLETE' ? 'ring-[3px] ring-orange-400 ring-offset-2 animate-pulse' : ''}`}
                 >
                   Incomplete
                 </button>
