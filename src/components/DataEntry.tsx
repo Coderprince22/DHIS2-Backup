@@ -460,6 +460,7 @@ export default function DataEntry() {
                                 <div className="w-24 border-l border-slate-300">
                                   <input 
                                     type="number"
+                                    min="0"
                                     value={formValues[de.id] || ''}
                                     onChange={(e) => handleInputChange(de.id, e.target.value)}
                                     className={`w-full h-full px-2 py-1 text-sm text-center outline-none focus:bg-blue-50 transition-colors ${
@@ -486,13 +487,14 @@ export default function DataEntry() {
                   </div>
                   
                   <div className="border border-slate-300 rounded-sm overflow-hidden">
-                     <div className="divide-y divide-slate-300">
+                      <div className="divide-y divide-slate-300">
                         {currentElements.slice(0, 3).map(de => (
                           <div key={de.id} className="flex bg-white">
                             <div className="flex-1 px-4 py-3 text-xs font-bold text-slate-700">{de.name}</div>
                             <div className="w-48 border-l border-slate-300">
                                <input 
                                   type="number"
+                                  min="0"
                                   value={formValues[de.id] || ''}
                                   onChange={(e) => handleInputChange(de.id, e.target.value)}
                                   className="w-full h-full px-3 py-2 text-center outline-none focus:bg-blue-50"
@@ -514,6 +516,7 @@ export default function DataEntry() {
                             <div className="w-48 border-l border-slate-300">
                                <input 
                                   type="number"
+                                  min="0"
                                   value={formValues[de.id] || ''}
                                   onChange={(e) => handleInputChange(de.id, e.target.value)}
                                   className="w-full h-full px-3 py-2 text-center outline-none focus:bg-blue-50"
@@ -557,6 +560,7 @@ export default function DataEntry() {
                               <td className={`border-r border-b border-slate-300 p-0 ${row.age1Disabled || row.isTotal ? 'bg-slate-100' : ''}`}>
                                 <input 
                                   type="number"
+                                  min="0"
                                   disabled={row.age1Disabled || row.isTotal}
                                   value={formValues[row.id + '_age1'] || ''}
                                   onChange={(e) => handleInputChange(row.id + '_age1', e.target.value)}
@@ -566,6 +570,7 @@ export default function DataEntry() {
                               <td className={`border-b border-slate-300 p-0 ${row.isTotal ? 'bg-slate-100' : ''}`}>
                                 <input 
                                   type="number"
+                                  min="0"
                                   disabled={row.isTotal}
                                   value={formValues[row.id + '_age2'] || ''}
                                   onChange={(e) => handleInputChange(row.id + '_age2', e.target.value)}
@@ -599,6 +604,7 @@ export default function DataEntry() {
                             <td className={`border-r border-b border-slate-300 p-0 ${row.age1Disabled || row.isTotal ? 'bg-slate-100' : ''}`}>
                               <input 
                                 type="number"
+                                min="0"
                                 disabled={row.age1Disabled || row.isTotal}
                                 value={formValues[row.id + '_age1'] || ''}
                                 onChange={(e) => handleInputChange(row.id + '_age1', e.target.value)}
@@ -608,6 +614,7 @@ export default function DataEntry() {
                             <td className={`border-b border-slate-300 p-0 ${row.isTotal ? 'bg-slate-100' : ''}`}>
                               <input 
                                 type="number"
+                                min="0"
                                 disabled={row.isTotal}
                                 value={formValues[row.id + '_age2'] || ''}
                                 onChange={(e) => handleInputChange(row.id + '_age2', e.target.value)}
@@ -642,6 +649,7 @@ export default function DataEntry() {
                               <td className="border-b border-slate-300 p-0">
                                 <input 
                                   type="number"
+                                  min="0"
                                   value={formValues[comm.id] || ''}
                                   onChange={(e) => handleInputChange(comm.id, e.target.value)}
                                   className="w-full h-full px-2 py-1.5 text-center outline-none focus:bg-blue-50 text-sm"
@@ -662,7 +670,11 @@ export default function DataEntry() {
 
                   <div className="flex items-center gap-2">
                      <label className="text-[10px] font-bold text-slate-700 w-32 border border-slate-300 px-2 py-1 bg-slate-50">No of outreach clinics</label>
-                     <input type="number" className="w-24 border border-slate-300 px-2 py-1 text-sm outline-none" />
+                     <input 
+                        type="number" 
+                        min="0"
+                        className="w-24 border border-slate-300 px-2 py-1 text-sm outline-none" 
+                     />
                   </div>
 
                   <div className="overflow-x-auto border-t border-l border-slate-300">
@@ -687,6 +699,7 @@ export default function DataEntry() {
                               <td key={col.id} className="border-r border-b border-slate-300 p-0">
                                  <input 
                                     type="number"
+                                    min="0"
                                     className={`w-full h-full px-2 py-1 text-xs text-center outline-none focus:bg-blue-50 ${col.id === 'stock_last' ? 'bg-slate-100' : ''}`}
                                  />
                               </td>
@@ -718,9 +731,9 @@ export default function DataEntry() {
                             {CMAM_BENEFICIARY_CATEGORIES.map(cat => (
                               <tr key={cat.id}>
                                 <td className="px-3 py-1.5 border-r border-b border-slate-300 text-[10px] font-bold italic text-slate-600">{cat.name}</td>
-                                <td className="border-r border-b border-slate-300 p-0"><input type="number" className="w-full h-full px-2 py-1 text-xs text-center outline-none" /></td>
-                                <td className="border-r border-b border-slate-300 p-0"><input type="number" className="w-full h-full px-2 py-1 text-xs text-center outline-none" /></td>
-                                <td className="border-r border-b border-slate-300 p-0 bg-slate-50"><input type="number" className="w-full h-full px-2 py-1 text-xs text-center outline-none bg-transparent" /></td>
+                                <td className="border-r border-b border-slate-300 p-0"><input type="number" min="0" className="w-full h-full px-2 py-1 text-xs text-center outline-none" /></td>
+                                <td className="border-r border-b border-slate-300 p-0"><input type="number" min="0" className="w-full h-full px-2 py-1 text-xs text-center outline-none" /></td>
+                                <td className="border-r border-b border-slate-300 p-0 bg-slate-50"><input type="number" min="0" className="w-full h-full px-2 py-1 text-xs text-center outline-none bg-transparent" /></td>
                               </tr>
                             ))}
                           </tbody>
@@ -761,6 +774,7 @@ export default function DataEntry() {
                                 <td className="px-6 py-4 border-b border-slate-100">
                                   <input 
                                     type="number"
+                                    min="0"
                                     value={formValues[de.id] || ''}
                                     onChange={(e) => handleInputChange(de.id, e.target.value)}
                                     className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-sm text-center outline-none focus:ring-1 focus:ring-blue-500"
