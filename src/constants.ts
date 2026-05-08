@@ -124,28 +124,12 @@ export const MOCK_ORG_UNITS: OrgUnit[] = [
   { id: 'ou_zingwangwa', name: 'Zingwangwa Urban Health Centre', level: 1 },
 ];
 
-export const MOCK_DATA_ELEMENTS: DataElement[] = [
-  {
-    id: 'de1',
-    name: 'ANC 1st Visit',
-    valueType: 'NUMBER',
-    aggregationType: 'SUM',
-    description: 'Number of pregnant women visiting for the first time.'
-  },
-  {
-    id: 'de2',
-    name: 'BCG Doses Administered',
-    valueType: 'NUMBER',
-    aggregationType: 'SUM',
-    description: 'Number of infants receiving BCG vaccine.'
-  },
-  {
-    id: 'de3',
-    name: 'Malaria Cases (Confirmed)',
-    valueType: 'NUMBER',
-    aggregationType: 'SUM',
-    description: 'Confirmed malaria cases via RDT or Microscopy.'
-  }
+export const MOCK_DATA_ELEMENTS: DataElement[] = [];
+
+export const REPORT_TYPES = [
+  { id: 'standard_report', name: 'Standard Report', description: 'Aggregated view of performance indicators.' },
+  { id: 'dataset_report', name: 'Data Set Report', description: 'Comprehensive view of multiple datasets across facilities.' },
+  { id: 'reporting_rate', name: 'Reporting Rate Summary', description: 'Completeness and timeliness of data submission.' },
 ];
 
 export interface ANCDataElement extends DataElement {

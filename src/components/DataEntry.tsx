@@ -222,8 +222,15 @@ export default function DataEntry() {
       return;
     }
 
-    if (newStatus === 'COMPLETE' && !validateForm()) {
-      return;
+    if (newStatus === 'COMPLETE') {
+      if (!validateForm()) return;
+      
+      const hasValues = Object.values(formValues).some(v => v !== '' && v !== '0');
+      if (!hasValues) {
+        setValidationErrors(["Cannot complete a blank report. Please enter at least one value."]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
     }
 
     if (!selectedOU) return;

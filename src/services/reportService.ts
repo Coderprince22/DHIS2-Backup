@@ -98,5 +98,36 @@ export const reportService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.GET, path);
     }
+  },
+
+  async getAllReportsByDataSet(dataSetId: string, period?: string) {
+    const q = query(
+      collection(db, 'reports'),
+      where('dataSetId', '==', dataSetId),
+      ...(period ? [where('period', '==', period)] : [])
+    );
+    
+    try {
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => doc.data() as ReportData);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'reports');
+      return [];
+    }
+  },
+
+  async getReportingRates(dataSetId: string, period: string, expectedCount: number) {
+    const reports = await this.getAllReportsByDataSet(dataSetId, period);
+    const completeCount = reports.filter(r => r.status === 'COMPLETE').length;
+    
+    return {
+      dataSetId,
+      period,
+      expected: expectedCount,
+      actual: reports.length,
+      complete: completeCount,
+      rate: expectedCount > 0 ? (reports.length / expectedCount) * 100 : 0,
+      completeRate: expectedCount > 0 ? (completeCount / expectedCount) * 100 : 0
+    };
   }
 };
