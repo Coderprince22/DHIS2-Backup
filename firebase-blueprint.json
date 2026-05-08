@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "Report": {
+      "title": "Data Report",
+      "description": "A monthly data report for a specific facility and data set",
+      "type": "object",
+      "properties": {
+        "orgUnitId": {
+          "type": "string",
+          "description": "ID of the organisation unit"
+        },
+        "orgUnitName": {
+          "type": "string",
+          "description": "Name of the organisation unit"
+        },
+        "period": {
+          "type": "string",
+          "description": "Reporting period (e.g., YYYY-MM)"
+        },
+        "dataSetId": {
+          "type": "string",
+          "description": "ID of the data set"
+        },
+        "dataSetName": {
+          "type": "string",
+          "description": "Name of the data set"
+        },
+        "values": {
+          "type": "object",
+          "description": "Key-value pairs of data element ID and value"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["COMPLETE", "INCOMPLETE"],
+          "description": "Submission status of the report"
+        },
+        "completedBy": {
+          "type": "string",
+          "description": "Email of the user who submitted the report"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["orgUnitId", "period", "dataSetId", "status", "values"]
+    }
+  },
+  "firestore": {
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Storage for monthly facility reports"
+    }
+  }
+}

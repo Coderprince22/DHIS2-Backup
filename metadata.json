@@ -1,0 +1,6 @@
+{
+  "name": "DHIS2 Expert Assistant",
+  "description": "A comprehensive support system for DHIS2 users, offering guidance on data management, metadata configuration, and health information analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
